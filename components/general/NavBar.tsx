@@ -1,9 +1,11 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { ThemeToggle } from './ThemeToggle';
-import { Button } from '../ui/button';
+import { Button, buttonVariants } from '../ui/button';
+import { auth, signOut } from '@/lib/auth';
 
-const NavBar = () => {
+const NavBar = async () => {
+	const session = await auth();
 	return (
 		<div className='flex justify-between items-center'>
 			<div className='logo'>
@@ -19,9 +21,24 @@ const NavBar = () => {
 			</div>
 			<div className='nav-menu flex space-x-4 justify-center items-center'>
 				<ThemeToggle />
-				<Button variant='default' asChild>
-					<Link href='/login'>Get Started</Link>
-				</Button>
+
+				{session?.user ? (
+					<form
+						action={async () => {
+							'use server';
+							await signOut({ redirectTo: '/' });
+						}}
+					>
+						<Button type='submit'>Logout</Button>
+					</form>
+				) : (
+					<Link
+						href='/login'
+						className={buttonVariants({ variant: 'default' })}
+					>
+						Get Started
+					</Link>
+				)}
 			</div>
 		</div>
 	);

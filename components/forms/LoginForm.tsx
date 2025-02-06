@@ -6,13 +6,21 @@ import {
 	CardTitle,
 } from '@/components/ui/card';
 
-import { Button } from '@/components/ui/button';
 import Google from '../icons/google-icon';
 import Github from '../icons/github-icon';
 import Link from 'next/link';
 import Image from 'next/image';
+import { auth, signIn } from '@/lib/auth';
+import SubmitButton from '../general/SubmitButton';
+import { redirect } from 'next/navigation';
 
-export function LoginForm() {
+export async function LoginForm() {
+	const session = await auth();
+
+	if (session?.user) {
+		redirect('/');
+	}
+
 	return (
 		<div className='min-h-screen flex justify-center items-center'>
 			<div className='flex flex-col gap-6 max-w-sm w-full text-center'>
@@ -36,17 +44,35 @@ export function LoginForm() {
 					</CardHeader>
 					<CardContent>
 						<div className='space-y-4'>
-							<form>
-								<Button type='submit' variant='outline' className='w-full'>
-									<Google className='size-4' />
-									Login with Google
-								</Button>
+							<form
+								action={async () => {
+									'use server';
+									await signIn('google', {
+										redirectTo: '/',
+									});
+								}}
+							>
+								<SubmitButton
+									text='Login with Google'
+									icon={<Google />}
+									variant='outline'
+									className='w-full'
+								/>
 							</form>
-							<form>
-								<Button type='submit' variant='outline' className='w-full'>
-									<Github className='size-4' />
-									Login with Github
-								</Button>
+							<form
+								action={async () => {
+									'use server';
+									await signIn('github', {
+										redirectTo: '/',
+									});
+								}}
+							>
+								<SubmitButton
+									text='Login with GitHub'
+									icon={<Github />}
+									variant='outline'
+									className='w-full'
+								/>
 							</form>
 						</div>
 					</CardContent>
