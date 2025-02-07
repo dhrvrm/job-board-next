@@ -6,19 +6,19 @@ import {
 	CardTitle,
 } from '@/components/ui/card';
 
-import Google from '../icons/google-icon';
-import Github from '../icons/github-icon';
+import Google from '@/components/icons/google-icon';
+import Github from '@/components/icons/github-icon';
 import Link from 'next/link';
 import Image from 'next/image';
 import { auth, signIn } from '@/lib/auth';
-import SubmitButton from '../general/SubmitButton';
+import SubmitButton from '@/components/general/SubmitButton';
 import { redirect } from 'next/navigation';
 
 export async function LoginForm() {
-	const session = await auth();
+	const session =	await auth();
 
-	if (session?.user) {
-		redirect('/');
+	if(session?.user?.id){
+		redirect('/')
 	}
 
 	return (
@@ -48,7 +48,7 @@ export async function LoginForm() {
 								action={async () => {
 									'use server';
 									await signIn('google', {
-										redirectTo: '/',
+										redirectTo: '/onboarding',
 									});
 								}}
 							>
@@ -63,7 +63,7 @@ export async function LoginForm() {
 								action={async () => {
 									'use server';
 									await signIn('github', {
-										redirectTo: '/',
+										redirectTo: '/onboarding',
 									});
 								}}
 							>
