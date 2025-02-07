@@ -5,10 +5,32 @@ import { z } from 'zod';
 import { requireAuth } from './hooks/server/requireAuth';
 import { prisma } from '@/lib/db';
 import { redirect } from 'next/navigation';
+import arcjet, { detectBot, shield } from '@/lib/arcjet';
+import { request } from '@arcjet/next';
+
+const aj = arcjet
+	.withRule(
+		shield({
+			mode: 'LIVE', //DRU_RUN in Dev Mode
+		})
+	)
+	.withRule(
+		detectBot({
+			mode: 'LIVE',
+			allow: ['CATEGORY:SEARCH_ENGINE'],
+		})
+	);
 
 export async function createCompany(data: z.infer<typeof CompanySchema>) {
 	const user = await requireAuth();
 	console.log('Got inside a company action: ', user?.id);
+
+	const req = await request();
+	const descision = await aj.protect(req);
+
+	if (descision.isDenied()) {
+		throw new Error('Forbidden');
+	}
 
 	const validatedData = CompanySchema.safeParse(data);
 
@@ -47,6 +69,13 @@ export async function createCompany(data: z.infer<typeof CompanySchema>) {
 export async function createJobSeeker(data: z.infer<typeof JobSeekerSchema>) {
 	const user = await requireAuth();
 	console.log('Got inside a jobseeker action: ', user?.id);
+
+	const req = await request();
+	const descision = await aj.protect(req);
+
+	if (descision.isDenied()) {
+		throw new Error('Forbidden');
+	}
 
 	const validatedData = JobSeekerSchema.safeParse(data);
 
