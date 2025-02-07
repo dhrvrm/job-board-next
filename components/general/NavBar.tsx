@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { ThemeToggle } from './ThemeToggle';
 import { Button, buttonVariants } from '../ui/button';
 import { auth, signOut } from '@/lib/auth';
+import { UserDropdown } from './UserDropdown';
 
 const NavBar = async () => {
 	const session = await auth();
@@ -19,19 +20,30 @@ const NavBar = async () => {
 					/>
 				</Link>
 			</div>
-			<div className='nav-menu flex space-x-4 justify-center items-center'>
+			<div className='hidden md:flex nav-menu gap-4 justify-center items-center'>
 				<ThemeToggle />
+				<Link
+					href='/post-job'
+					className={buttonVariants({ variant: 'default' })}
+				>
+					Post Job
+				</Link>
 
 				{session?.user ? (
-					<form
-						action={async () => {
-							'use server';
-							await signOut({ redirectTo: '/' });
-						}}
-					>
-						<Button type='submit'>Logout</Button>
-					</form>
+					<UserDropdown
+						name={session.user?.name as string}
+						image={session.user?.image as string}
+						email={session.user?.email as string}
+					/>
 				) : (
+					// <form
+					// 	action={async () => {
+					// 		'use server';
+					// 		await signOut({ redirectTo: '/' });
+					// 	}}
+					// >
+					// 	<Button type='submit'>Logout</Button>
+					// </form>
 					<Link
 						href='/login'
 						className={buttonVariants({ variant: 'default' })}
