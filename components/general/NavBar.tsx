@@ -1,8 +1,8 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { ThemeToggle } from './ThemeToggle';
-import { Button, buttonVariants } from '../ui/button';
-import { auth, signOut } from '@/lib/auth';
+import { buttonVariants } from '../ui/button';
+import { auth } from '@/lib/auth';
 import { UserDropdown } from './UserDropdown';
 
 const NavBar = async () => {
@@ -36,17 +36,9 @@ const NavBar = async () => {
 						email={session.user?.email as string}
 					/>
 				) : (
-					// <form
-					// 	action={async () => {
-					// 		'use server';
-					// 		await signOut({ redirectTo: '/' });
-					// 	}}
-					// >
-					// 	<Button type='submit'>Logout</Button>
-					// </form>
 					<Link
 						href='/login'
-						className={buttonVariants({ variant: 'default' })}
+						className={buttonVariants({ variant: 'secondary' })}
 					>
 						Get Started
 					</Link>

@@ -53,14 +53,18 @@ export function UserDropdown({ name, image, email }: Props) {
 						<form
 							action={async () => {
 								'use server';
+								console.log('signing out');
+
 								await signOut({
 									redirectTo: '/',
 								});
 							}}
 							className='flex gap-2 items-center'
 						>
-							<LogOut size={16} strokeWidth={2} className='opacity-60' />{' '}
-							<span>Logout</span>
+							<button type='submit' className='flex gap-2 items-center'>
+								<LogOut size={16} strokeWidth={2} className='opacity-60' />
+								<span>Logout</span>
+							</button>
 						</form>
 					</DropdownMenuItem>
 				</DropdownMenuGroup>
