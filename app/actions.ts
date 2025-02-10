@@ -1,6 +1,10 @@
 'use server';
 
-import { CompanySchema, JobSeekerSchema } from '@/lib/zodSchemas';
+import {
+	CompanySchema,
+	JobPostSchema,
+	JobSeekerSchema,
+} from '@/lib/zodSchemas';
 import { z } from 'zod';
 import { requireAuth } from './hooks/server/requireAuth';
 import { prisma } from '@/lib/db';
@@ -109,4 +113,49 @@ export async function createJobSeeker(data: z.infer<typeof JobSeekerSchema>) {
 			redirect('/');
 		}
 	}
+}
+
+export async function createJobPost(data: z.infer<typeof JobPostSchema>) {
+	const user = await requireAuth();
+	console.log('Got inside a Job Post action: ', user?.id);
+
+	const req = await request();
+	const descision = await aj.protect(req);
+
+	if (descision.isDenied()) {
+		throw new Error('Forbidden');
+	}
+
+	const validatedData = JobPostSchema.safeParse(data);
+
+	if (!validatedData.success) {
+		throw new Error('Invalid data: ', validatedData.error);
+	}
+
+	const company = await prisma.company.findUnique({
+		where: { userId: user.id },
+		select: {
+			id: true,
+		},
+	});
+
+	if (!company?.id) {
+		return redirect('/');
+	}
+
+	await prisma.jobPost.create({
+		data: {
+			jobTitle: validatedData.data.jobTitle,
+			jobDescription: validatedData.data.jobDescription,
+			location: validatedData.data.location,
+			employmentType: validatedData.data.employmentType,
+			salaryFrom: validatedData.data.salaryFrom,
+			salaryTo: validatedData.data.salaryTo,
+			listingDuration: validatedData.data.listingDuration,
+			benefits: validatedData.data.benefits,
+			companyId: company.id,
+		},
+	});
+
+	return redirect('/');
 }

@@ -6,7 +6,7 @@ export function getFlagEmoji(location: string): string {
 	);
 
 	return country?.flagEmoji || '';
-}
+}	
 
 export const countryList = [
 	{

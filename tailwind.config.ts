@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-require-imports */
+/** @type {import('tailwindcss').Config} */
 import type { Config } from 'tailwindcss';
 import { withUt } from 'uploadthing/tw';
 
@@ -60,5 +61,5 @@ export default withUt({
 			},
 		},
 	},
-	plugins: [require('tailwindcss-animate')],
+	plugins: [require('tailwindcss-animate'), require('@tailwindcss/typography')],
 }) satisfies Config;
