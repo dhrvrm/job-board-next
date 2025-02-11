@@ -268,7 +268,7 @@ const PostJobForm = ({
 									{companyWebsite}
 								</span>
 								<span className='text-xs text-muted-foreground'>
-									{companyAbout.slice(0, 40)}...
+									{companyAbout?.slice(0, 40)}...
 								</span>
 							</div>
 						</div>

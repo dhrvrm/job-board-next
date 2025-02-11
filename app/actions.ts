@@ -11,6 +11,9 @@ import { prisma } from '@/lib/db';
 import { redirect } from 'next/navigation';
 import arcjet, { detectBot, shield } from '@/lib/arcjet';
 import { request } from '@arcjet/next';
+import { stripe } from '@/lib/stripe';
+import { jobListingDurationPricing } from '@/lib/priceTiers';
+import { inngest } from '@/lib/inngest/client';
 
 const aj = arcjet
 	.withRule(
@@ -136,6 +139,11 @@ export async function createJobPost(data: z.infer<typeof JobPostSchema>) {
 		where: { userId: user.id },
 		select: {
 			id: true,
+			user: {
+				select: {
+					stripeCustomerId: true,
+				},
+			},
 		},
 	});
 
@@ -143,7 +151,25 @@ export async function createJobPost(data: z.infer<typeof JobPostSchema>) {
 		return redirect('/');
 	}
 
-	await prisma.jobPost.create({
+	let stripeCustomerId = company.user.stripeCustomerId;
+
+	if (!stripeCustomerId) {
+		const customer = await stripe.customers.create({
+			name: user.name as string,
+			email: user.email as string,
+		});
+
+		stripeCustomerId = customer.id;
+
+		await prisma.user.update({
+			where: { id: user.id },
+			data: {
+				stripeCustomerId: customer.id,
+			},
+		});
+	}
+
+	const jobPost = await prisma.jobPost.create({
 		data: {
 			jobTitle: validatedData.data.jobTitle,
 			jobDescription: validatedData.data.jobDescription,
@@ -155,7 +181,52 @@ export async function createJobPost(data: z.infer<typeof JobPostSchema>) {
 			benefits: validatedData.data.benefits,
 			companyId: company.id,
 		},
+		select: {
+			id: true,
+		},
 	});
 
-	return redirect('/');
+	const currentTier = jobListingDurationPricing.find(
+		(tier) => tier.days === validatedData.data.listingDuration
+	);
+
+	if (!currentTier) {
+		throw new Error('Pricing Tier not found');
+	}
+
+	await inngest.send({
+		name: 'job/created',
+		data: {
+			jobId: jobPost.id,
+			expirationDays: currentTier.days,
+		},
+	});
+
+	const session = await stripe.checkout.sessions.create({
+		customer: stripeCustomerId,
+		line_items: [
+			{
+				price_data: {
+					product_data: {
+						name: `Job Post - ${currentTier.days} days`,
+						description: currentTier.description,
+						images: [
+							'https://github.com/dhrvrm/job-board-next/blob/main/public/logo.png?raw=true',
+						],
+					},
+					currency: 'USD',
+					unit_amount: currentTier.price * 100,
+				},
+				quantity: 1,
+			},
+		],
+		mode: 'payment',
+		success_url: `${process.env.NEXT_PUBLIC_URL}/payment/success`,
+		cancel_url: `${process.env.NEXT_PUBLIC_URL}/payment/failure`,
+		metadata: {
+			jobId: jobPost.id,
+		},
+	});
+
+	return redirect(session.url as string);
 }
