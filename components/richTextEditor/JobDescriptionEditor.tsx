@@ -1,3 +1,5 @@
+'use client';
+
 import { EditorContent, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import MenuBar from './MenuBar';
@@ -25,11 +27,11 @@ export function JobDescriptionEditor({ field }: Props) {
 					'min-h-[280px] max-w-none p-4 focus:outline-none prose prose-sm sm:prose lg:prose-lg xl-prose-xl dark:prose-invert',
 			},
 		},
-		onUpdate: ({editor})=>{
-			field.onChange(JSON.stringify(editor.getJSON()))
+		onUpdate: ({ editor }) => {
+			field.onChange(JSON.stringify(editor.getJSON()));
 		},
 
-		content: field.value ? JSON.parse(field.value) : ""
+		content: field.value ? JSON.parse(field.value) : '',
 	});
 
 	return (

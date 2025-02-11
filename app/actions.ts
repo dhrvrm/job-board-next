@@ -91,7 +91,7 @@ export async function createJobSeeker(data: z.infer<typeof JobSeekerSchema>) {
 	}
 
 	try {
-		await prisma.user.update({
+		const newUser = await prisma.user.update({
 			where: {
 				id: user?.id,
 			},
@@ -106,8 +106,15 @@ export async function createJobSeeker(data: z.infer<typeof JobSeekerSchema>) {
 			},
 		});
 
-		// Add a redirect after successful creation
-		redirect('/'); // Import redirect from 'next/navigation'
+		await inngest.send({
+			name: 'jobseeker/created',
+			data: {
+				userId: newUser.id,
+				email: newUser.email,
+			},
+		});
+
+		redirect('/');
 	} catch (error) {
 		if (error instanceof Error && error.message !== 'NEXT_REDIRECT') {
 			console.error('Database error:', error);
