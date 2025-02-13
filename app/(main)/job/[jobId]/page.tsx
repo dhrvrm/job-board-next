@@ -100,10 +100,10 @@ export default async function JobDetailsPage({ params }: { params: Params }) {
 							/>
 							<div>
 								<h1 className='text-xl lg:text-3xl font-semibold'>
-									{job.Company.name}
+									{job.jobTitle}
 								</h1>
 								<p className='text-muted-foreground text-sm'>
-									{job.Company.location}
+									{job.Company.name} • {job.location}
 								</p>
 							</div>
 						</div>
