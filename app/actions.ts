@@ -14,16 +14,17 @@ import { request } from '@arcjet/next';
 import { stripe } from '@/lib/stripe';
 import { jobListingDurationPricing } from '@/lib/priceTiers';
 import { inngest } from '@/lib/inngest/client';
+import { revalidatePath } from 'next/cache';
 
 const aj = arcjet
 	.withRule(
 		shield({
-			mode: 'LIVE', //DRU_RUN in Dev Mode
+			mode: 'DRY_RUN', //DRU_RUN in Dev Mode
 		})
 	)
 	.withRule(
 		detectBot({
-			mode: 'LIVE',
+			mode: 'DRY_RUN',
 			allow: ['CATEGORY:SEARCH_ENGINE'],
 		})
 	);
@@ -236,4 +237,46 @@ export async function createJobPost(data: z.infer<typeof JobPostSchema>) {
 	});
 
 	return redirect(session.url as string);
+}
+
+export async function saveJob(jobId: string) {
+	const user = await requireAuth();
+	console.log('Got inside a Save Job action: ', jobId, user.id);
+
+	const req = await request();
+	const descision = await aj.protect(req);
+
+	if (descision.isDenied()) {
+		throw new Error('Forbidden');
+	}
+
+	await prisma.savedJob.create({
+		data: {
+			userId: user.id,
+			jobPostId: jobId,
+		},
+	});
+
+	revalidatePath(`/job/${jobId}`);
+}
+
+export async function unsaveJob(jobId: string) {
+	const user = await requireAuth();
+	console.log('Got inside a Un-Save Job action: ', jobId, user.id);
+
+	const req = await request();
+	const descision = await aj.protect(req);
+
+	if (descision.isDenied()) {
+		throw new Error('Forbidden');
+	}
+
+	await prisma.savedJob.delete({
+		where: {
+			id: jobId,
+			userId: user.id as string,
+		},
+	});
+
+	revalidatePath(`/job/${jobId}`);
 }

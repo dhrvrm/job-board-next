@@ -1,58 +1,76 @@
+import { saveJob, unsaveJob } from '@/app/actions';
+import { SaveJobButton } from '@/components/general/SubmitButton';
 import JSONtoHTMLView from '@/components/richTextEditor/JSONtoHTMLView';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import arcjet, { detectBot, fixedWindow } from '@/lib/arcjet';
+import { auth } from '@/lib/auth';
 import { benefits } from '@/lib/benefitList';
 import { prisma } from '@/lib/db';
 import { request } from '@arcjet/next';
-import { Heart } from 'lucide-react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
 const aj = arcjet
 	.withRule(
 		detectBot({
-			mode: 'LIVE',
+			mode: 'DRY_RUN',
 			allow: ['CATEGORY:SEARCH_ENGINE', 'CATEGORY:PREVIEW'],
 		})
 	)
-	.withRule(fixedWindow({ mode: 'LIVE', max: 10, window: '60s' }));
+	.withRule(fixedWindow({ mode: 'DRY_RUN', max: 10, window: '60s' }));
 
-async function getJob(jobId: string) {
-	const jobData = await prisma.jobPost.findUnique({
-		where: {
-			status: 'ACTIVE',
-			id: jobId,
-		},
-		select: {
-			jobTitle: true,
-			jobDescription: true,
-			benefits: true,
-			employmentType: true,
-			salaryFrom: true,
-			salaryTo: true,
-			location: true,
-			listingDuration: true,
-			createdAt: true,
-			Company: {
-				select: {
-					name: true,
-					logo: true,
-					location: true,
-					about: true,
+async function getJob(jobId: string, userId?: string) {
+	const [jobData, savedJob] = await Promise.all([
+		await prisma.jobPost.findUnique({
+			where: {
+				status: 'ACTIVE',
+				id: jobId,
+			},
+			select: {
+				jobTitle: true,
+				jobDescription: true,
+				benefits: true,
+				employmentType: true,
+				salaryFrom: true,
+				salaryTo: true,
+				location: true,
+				listingDuration: true,
+				createdAt: true,
+				Company: {
+					select: {
+						name: true,
+						logo: true,
+						location: true,
+						about: true,
+					},
 				},
 			},
-		},
-	});
+		}),
+
+		userId
+			? prisma.savedJob.findUnique({
+					where: {
+						userId_jobPostId: {
+							userId: userId as string,
+							jobPostId: jobId,
+						},
+					},
+					select: { id: true },
+			  })
+			: null,
+	]);
 
 	if (!jobData) {
 		return notFound();
 	}
-	return jobData;
+	return { jobData, savedJob };
 }
 
 type Params = Promise<{ jobId: string }>;
+
 export default async function JobDetailsPage({ params }: { params: Params }) {
 	const req = await request();
 	const decision = await aj.protect(req);
@@ -62,10 +80,12 @@ export default async function JobDetailsPage({ params }: { params: Params }) {
 	}
 
 	const { jobId } = await params;
-	const job = await getJob(jobId);
+	const session = await auth();
+
+	const { jobData: job, savedJob } = await getJob(jobId, session?.user?.id);
 
 	return (
-		<div className='grid lg:grid-cols-[1fr,300px] gap-8 my-8'>
+		<div className='grid lg:grid-cols-[1fr,400px] gap-8 my-8'>
 			<div className='space-y-8'>
 				<div className='flex items-center justify-between gap-4'>
 					<div className='flex flex-col gap-2'>
@@ -139,10 +159,31 @@ export default async function JobDetailsPage({ params }: { params: Params }) {
 						</p>
 					</CardHeader>
 					<CardContent className='flex flex-wrap gap-4'>
-						<Button> Apply Now</Button>
-						<Button variant={'outline'}>
-							<Heart /> <span>Save Job</span>
-						</Button>
+						{session?.user?.id ? (
+							<>
+								<form
+								// action={async () => {
+								// 	'use server';
+								// 	// await applyForJob()
+								// }}
+								>
+									<Button type='submit'> Apply Now</Button>
+								</form>
+								<form
+									action={
+										savedJob
+											? unsaveJob.bind(null, savedJob.id)
+											: saveJob.bind(null, jobId)
+									}
+								>
+									<SaveJobButton savedJob={!!savedJob} />
+								</form>
+							</>
+						) : (
+							<Link href={'/login'} className={buttonVariants()}>
+								Login to Continue
+							</Link>
+						)}
 					</CardContent>
 				</Card>
 

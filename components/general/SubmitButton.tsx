@@ -2,7 +2,8 @@
 
 import { useFormStatus } from 'react-dom';
 import { Button } from '@/components/ui/button';
-import { LoaderCircle } from 'lucide-react';
+import { Heart, Loader, LoaderCircle } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 type SubmitButtonProps = {
 	text: string;
@@ -42,5 +43,34 @@ const SubmitButton = ({
 		</Button>
 	);
 };
+export function SaveJobButton({ savedJob }: { savedJob: boolean }) {
+	const { pending } = useFormStatus();
+
+	return (
+		<Button
+			variant={'outline'}
+			disabled={pending}
+			type='submit'
+			className='flex w-fit gap-2 items-center'
+		>
+			{pending ? (
+				<>
+					<Loader className='animate-spin size-4' />
+					<span>Hold On</span>
+				</>
+			) : (
+				<>
+					<Heart
+						className={cn(
+							'size-4 transition-colors',
+							savedJob ? 'fill-current text-red-500' : ''
+						)}
+					/>
+					<span>Save Post</span>
+				</>
+			)}
+		</Button>
+	);
+}
 
 export default SubmitButton;
