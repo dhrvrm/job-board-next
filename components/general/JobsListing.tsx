@@ -48,9 +48,9 @@ const JobsListing = async () => {
 		);
 	}
 	return (
-		<div className='grid gap-6 grid-cols-1 col-span-2'>
+		<div className='grid gap-6 grid-cols-1 lg:col-span-2'>
 			{jobs?.map((job) => (
-				<JobCard key={job.id} job={job}/>
+				<JobCard key={job.id} job={job} />
 			))}
 		</div>
 	);
