@@ -21,7 +21,7 @@ export default function PayementSuccessPage() {
 					</div>
 					<Link
 						className={cn(buttonVariants(), 'flex items-center mt-6')}
-						href='/job-posts'
+						href='/my-jobs'
 					>
 						<MoveLeft />
 						<BriefcaseBusiness size={4} />

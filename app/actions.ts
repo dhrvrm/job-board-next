@@ -239,6 +239,80 @@ export async function createJobPost(data: z.infer<typeof JobPostSchema>) {
 	return redirect(session.url as string);
 }
 
+export async function updateJobPost(
+	data: z.infer<typeof JobPostSchema>,
+	jobId: string
+) {
+	const user = await requireAuth();
+	console.log('Got inside a update Job Post action: ', user?.id);
+
+	const req = await request();
+	const descision = await aj.protect(req);
+
+	if (descision.isDenied()) {
+		throw new Error('Forbidden');
+	}
+
+	const validatedData = JobPostSchema.safeParse(data);
+
+	if (!validatedData.success) {
+		throw new Error('Invalid data: ', validatedData.error);
+	}
+
+	await prisma.jobPost.update({
+		where: { id: jobId, Company: { userId: user?.id } },
+		data: {
+			jobTitle: validatedData.data.jobTitle,
+			jobDescription: validatedData.data.jobDescription,
+			location: validatedData.data.location,
+			employmentType: validatedData.data.employmentType,
+			salaryFrom: validatedData.data.salaryFrom,
+			salaryTo: validatedData.data.salaryTo,
+			benefits: validatedData.data.benefits,
+		},
+	});
+
+	const currentTier = jobListingDurationPricing.find(
+		(tier) => tier.days === validatedData.data.listingDuration
+	);
+
+	if (!currentTier) {
+		throw new Error('Pricing Tier not found');
+	}
+
+	return redirect(`/my-jobs`);
+}
+
+export async function deleteJobPost(jobId: string) {
+	const user = await requireAuth();
+	console.log('Got inside a Delete Job action: ', jobId);
+
+	const req = await request();
+	const descision = await aj.protect(req);
+
+	if (descision.isDenied()) {
+		throw new Error('Forbidden');
+	}
+
+	await prisma.jobPost.delete({
+		where: {
+			id: jobId,
+			Company: {
+				userId: user.id,
+			},
+		},
+	});
+
+	await inngest.send({
+		name: 'job/cancel.expiration',
+		data: {
+			jobId: jobId,
+		},
+	});
+
+	return redirect(`/my-jobs`);
+}
+
 export async function saveJob(jobId: string) {
 	const user = await requireAuth();
 	console.log('Got inside a Save Job action: ', jobId, user.id);

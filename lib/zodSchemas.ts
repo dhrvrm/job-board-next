@@ -46,7 +46,7 @@ export const JobPostSchema = z.object({
 	jobDescription: z
 		.string()
 		.min(12, 'Enter a job description')
-		.max(2048, 'Job description is too long'),
+		.max(4096, 'Job description is too long'),
 	listingDuration: z
 		.number()
 		.int()

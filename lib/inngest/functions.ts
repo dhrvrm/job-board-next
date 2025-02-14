@@ -3,7 +3,15 @@ import { inngest } from './client';
 import { resend } from '@/lib/resend';
 
 export const handleJobExpiry = inngest.createFunction(
-	{ id: 'job-expiration' },
+	{
+		id: 'job-expiration',
+		cancelOn: [
+			{
+				event: 'job/cancel.expiration',
+				if: 'event.data.jobId == async.data.jobId',
+			},
+		],
+	},
 	{ event: 'job/created' },
 	async ({ event, step }) => {
 		const { jobId, expirationDays } = event.data;
@@ -132,7 +140,7 @@ export const jobsUpdateMail = inngest.createFunction(
 						from: 'Direct Hire <jobs@updates.vaayudigital.in>',
 						to: email,
 						subject: 'New Job Opportunities for You',
-						html: htmlContent
+						html: htmlContent,
 					});
 				});
 
