@@ -32,9 +32,9 @@ type Props = {
 const JobCard = ({ job }: Props) => {
 	const { Company: company } = job;
 
-	const getEmploymentTypeName = (value: string) => {
-		return jobTypes.find((type) => type.value === value)?.name || value;
-	};
+	// const getEmploymentTypeName = (value: string) => {
+	// 	return jobTypes?.find((type) => type.value === value)?.name || value;
+	// };
 
 	return (
 		<Link
@@ -83,8 +83,11 @@ const JobCard = ({ job }: Props) => {
 								<span className='text-sm'>{job.location}</span>
 							</div>
 							<div className='flex items-center text-muted-foreground gap-4'>
-								<Badge variant='default' className='text-xs font-normal'>
-									{getEmploymentTypeName(job.employmentType)}
+								<Badge
+									variant='default'
+									className='text-xs font-normal capitalize'
+								>
+									{job.employmentType.replaceAll('-', ' ').toLowerCase()}
 								</Badge>
 								<span className='text-sm'>
 									{formatRelativeTime(job.createdAt)}

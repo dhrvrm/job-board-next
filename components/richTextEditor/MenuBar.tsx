@@ -55,7 +55,7 @@ const MenuBar = ({ editor }: Props) => {
 								<Bold />
 							</Toggle>
 						</TooltipTrigger>
-						<TooltipContent>Bold</TooltipContent>
+						<TooltipContent>Bold [ctrl+b]</TooltipContent>
 					</Tooltip>
 
 					<Tooltip>

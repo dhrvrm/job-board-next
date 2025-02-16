@@ -1,41 +1,48 @@
 import { prisma } from '@/lib/db';
 import EmptyState from './EmptyState';
 import JobCard from './JobCard';
+import MainPagintation from './MainPagintation';
 
-async function getJobs() {
-	const data = prisma.jobPost.findMany({
-		where: {
-			status: 'ACTIVE',
-		},
-		select: {
-			id: true,
-			jobTitle: true,
-			jobDescription: true,
-			employmentType: true,
-			location: true,
-			salaryFrom: true,
-			salaryTo: true,
-			benefits: true,
-			createdAt: true,
-			Company: {
-				select: {
-					name: true,
-					logo: true,
-					about: true,
-					location: true,
+async function getJobs(pageNumber: number = 1, pageSize: number = 1) {
+	const [data, count] = await Promise.all([
+		prisma.jobPost.findMany({
+			where: {
+				status: 'ACTIVE',
+			},
+			take: pageSize,
+			skip: pageSize * (pageNumber - 1),
+			select: {
+				id: true,
+				jobTitle: true,
+				jobDescription: true,
+				employmentType: true,
+				location: true,
+				salaryFrom: true,
+				salaryTo: true,
+				benefits: true,
+				createdAt: true,
+				Company: {
+					select: {
+						name: true,
+						logo: true,
+						about: true,
+						location: true,
+					},
 				},
 			},
-		},
-		orderBy: {
-			createdAt: 'desc',
-		},
-	});
+			orderBy: {
+				createdAt: 'desc',
+			},
+		}),
 
-	return data;
+		prisma.jobPost.count({ where: { status: 'ACTIVE' } }),
+	]);
+
+	return { jobs: data, totalPages: Math.ceil(count / pageSize) };
 }
 
-const JobsListing = async () => {
-	const jobs = await getJobs();
+const JobsListing = async ({currentPage}: {currentPage: number}) => {
+	const { jobs, totalPages } = await getJobs(currentPage);
 
 	if (jobs?.length === 0) {
 		return (
@@ -52,6 +59,7 @@ const JobsListing = async () => {
 			{jobs?.map((job) => (
 				<JobCard key={job.id} job={job} />
 			))}
+			<MainPagintation currentPage={currentPage} totalPages={totalPages} />
 		</div>
 	);
 };
