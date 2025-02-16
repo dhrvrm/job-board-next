@@ -19,12 +19,12 @@ import { revalidatePath } from 'next/cache';
 const aj = arcjet
 	.withRule(
 		shield({
-			mode: 'DRY_RUN', //DRU_RUN in Dev Mode
+			mode: 'LIVE', //DRU_RUN in Dev Mode
 		})
 	)
 	.withRule(
 		detectBot({
-			mode: 'DRY_RUN',
+			mode: 'LIVE',
 			allow: ['CATEGORY:SEARCH_ENGINE'],
 		})
 	);

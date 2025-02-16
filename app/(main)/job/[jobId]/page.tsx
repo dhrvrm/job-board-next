@@ -16,11 +16,11 @@ import { notFound } from 'next/navigation';
 const aj = arcjet
 	.withRule(
 		detectBot({
-			mode: 'DRY_RUN',
+			mode: 'LIVE',
 			allow: ['CATEGORY:SEARCH_ENGINE', 'CATEGORY:PREVIEW'],
 		})
 	)
-	.withRule(fixedWindow({ mode: 'DRY_RUN', max: 10, window: '60s' }));
+	.withRule(fixedWindow({ mode: 'LIVE', max: 10, window: '60s' }));
 
 async function getJob(jobId: string, userId?: string) {
 	const [jobData, savedJob] = await Promise.all([
