@@ -80,27 +80,23 @@ const stats = [
 ];
 
 async function getCompany(userId: string) {
-	try {
-		const data = await prisma.company.findUnique({
-			where: { userId: userId },
-			select: {
-				id: true,
-				name: true,
-				location: true,
-				about: true,
-				logo: true,
-				xAccount: true,
-				website: true,
-			},
-		});
+	const data = await prisma.company.findUnique({
+		where: { userId: userId },
+		select: {
+			id: true,
+			name: true,
+			location: true,
+			about: true,
+			logo: true,
+			xAccount: true,
+			website: true,
+		},
+	});
 
-		if (!data) {
-			return redirect('/');
-		}
-		return data;
-	} catch (err) {
-		console.error('Company is not there for the user or database error', err);
+	if (!data) {
+		return redirect('/');
 	}
+	return data;
 }
 
 export default async function PostJobPage() {

@@ -1,10 +1,12 @@
+import { requireAuth } from '@/app/hooks/server/requireAuth';
 import { buttonVariants } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import { BriefcaseBusiness, Check, MoveLeft } from 'lucide-react';
 import Link from 'next/link';
 
-export default function PayementSuccessPage() {
+export default async function PayementSuccessPage() {
+	await requireAuth();
 	return (
 		<div className='w-full min-h-screen flex justify-center items-center'>
 			<Card className='max-w-80'>
