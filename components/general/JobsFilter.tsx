@@ -1,3 +1,4 @@
+'use client';
 import { XIcon } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
@@ -14,6 +15,8 @@ import {
 	SelectItem,
 } from '../ui/select';
 import { countryList as countries } from '@/lib/countrieslist';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useCallback } from 'react';
 
 export const jobTypes = [
 	{
@@ -39,6 +42,48 @@ export const jobTypes = [
 ];
 
 const JobsFilter = () => {
+	const searchParams = useSearchParams();
+
+	const currentJobTypes = searchParams.get('jobTypes')?.split(',') || [];
+	const currentLocation = searchParams.get('location') || '';
+
+	const router = useRouter();
+
+	function clearAllFilters() {
+		router.push('/');
+	}
+	const createQueryString = useCallback(
+		(name: string, value: string) => {
+			const params = new URLSearchParams(searchParams.toString());
+			if (value) {
+				params.set(name, value);
+			} else {
+				params.delete(name);
+			}
+			params.set('page', '1');
+			return params.toString();
+		},
+		[searchParams]
+	);
+
+	function handleJobTypeChange(jobType: string, checked: boolean) {
+		const typeSet = new Set(currentJobTypes);
+
+		if (checked) {
+			typeSet.add(jobType);
+		} else {
+			typeSet.delete(jobType);
+		}
+
+		const newValue = Array.from(typeSet).join(',');
+
+		router.push(`?${createQueryString('jobTypes', newValue)}`);
+	}
+
+	function handleLocationChange(location: string) {
+		router.push(`?${createQueryString('location', location)}`);
+	}
+
 	return (
 		<Card className='h-fit'>
 			<CardHeader>
@@ -48,6 +93,7 @@ const JobsFilter = () => {
 						variant={'destructive'}
 						size={'sm'}
 						className='h-8 flex items-center'
+						onClick={clearAllFilters}
 					>
 						<XIcon /> Clear Filters
 					</Button>
@@ -61,7 +107,13 @@ const JobsFilter = () => {
 					<div className='gap-2 mt-4 grid grid-cols-3 lg:grid-cols-2'>
 						{jobTypes.map((job) => (
 							<div key={job.id}>
-								<Checkbox id={job.value} />
+								<Checkbox
+									id={job.value}
+									checked={currentJobTypes.includes(job.value)}
+									onCheckedChange={(checked) => {
+										handleJobTypeChange(job.value, checked as boolean);
+									}}
+								/>
 								<Label htmlFor={job.value} className='text-sm font-medium ml-2'>
 									{job.name}
 								</Label>
@@ -74,7 +126,12 @@ const JobsFilter = () => {
 
 				<div className='flex flex-col gap-4'>
 					<Label className='text-lg font-semibold'>Location</Label>
-					<Select>
+					<Select
+						value={currentLocation}
+						onValueChange={(location) => {
+							handleLocationChange(location);
+						}}
+					>
 						<SelectTrigger>
 							<SelectValue placeholder='Select a location' />
 						</SelectTrigger>

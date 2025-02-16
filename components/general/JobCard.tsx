@@ -3,7 +3,6 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
 import { MapPin, Building2, BanknoteIcon } from 'lucide-react';
-import { jobTypes } from './JobsFilter';
 
 import { getFormatedCurrency } from '@/utils/formatCurrency';
 import { formatRelativeTime } from '@/utils/formatRelativeTime';
