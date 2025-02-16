@@ -4,8 +4,19 @@ import { benefits } from '@/lib/benefitList';
 import { Badge } from '@/components/ui/badge';
 import { ControllerRenderProps } from 'react-hook-form';
 
+type FormValues = {
+	location: string;
+	jobTitle: string;
+	employmentType: string;
+	salaryFrom: number;
+	salaryTo: number;
+	jobDescription: string;
+	listingDuration: number;
+	benefits: string[];
+};
+
 type Props = {
-	field: ControllerRenderProps;
+	field: ControllerRenderProps<FormValues, 'benefits'>;
 };
 
 const BenefitsSelector = ({ field }: Props) => {

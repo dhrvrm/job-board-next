@@ -7,8 +7,19 @@ import Typography from '@tiptap/extension-typography';
 import TextAlign from '@tiptap/extension-text-align';
 import { ControllerRenderProps } from 'react-hook-form';
 
+type FormValues = {
+	location: string;
+	jobTitle: string;
+	employmentType: string;
+	salaryFrom: number;
+	salaryTo: number;
+	jobDescription: string;
+	listingDuration: number;
+	benefits: string[];
+};
+
 type Props = {
-	field: ControllerRenderProps;
+	field: ControllerRenderProps<FormValues, 'jobDescription'>;
 };
 
 export function JobDescriptionEditor({ field }: Props) {
