@@ -15,10 +15,10 @@ import SubmitButton from '@/components/general/SubmitButton';
 import { redirect } from 'next/navigation';
 
 export async function LoginForm() {
-	const session =	await auth();
+	const session = await auth();
 
-	if(session?.user?.id){
-		redirect('/')
+	if (session?.user?.id) {
+		redirect('/');
 	}
 
 	return (
@@ -28,7 +28,7 @@ export async function LoginForm() {
 					<Link href='/'>
 						<Image
 							src='/logo.png'
-							alt='Direc Hire Logo'
+							alt='Law Sarthi Logo'
 							height={50}
 							width={200}
 							className='cursor-pointer object-contain size-20'
